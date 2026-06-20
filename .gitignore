@@ -1,0 +1,32 @@
+# ==========================================
+# Leleka Tools - Professionelle .gitignore
+# ==========================================
+
+# 1. Python Bytecode & Cache (Dein geliebtes "peikasch")
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+
+# 2. Virtuelle Umgebungen (Isolierte Environments)
+.venv/
+venv/
+env/
+ENV/
+pyvenv.cfg
+
+# 3. Pip & Requirements-Backups
+# Falls du deine gefreezten requirements_temp.txt im Repo-Ordner parkst,
+# werden sie hier ignoriert, damit sie nicht auf GitHub landen.
+*requirements_temp*.txt
+temp_*.txt
+.pip-cache/
+
+# 4. OS-spezifischer Müll (Linux / macOS)
+.DS_Store
+.thumbs/
+.desktop_backups/
+
+# 5. Lokale Konfigurationen & Secrets (Wichtig für AI-Tools!)
+.env
+*.local

@@ -1,0 +1,5 @@
+code2prompt_rs==3.2.1
+ollama==0.6.2
+rich==15.0.0
+setuptools==82.0.1
+typer==0.26.7
