@@ -1,0 +1,16 @@
+main.py
+setup.py
+commands/__init__.py
+commands/ai_commands.py
+commands/build_train_commands.py
+commands/system_commands.py
+core/__init__.py
+core/config.py
+core/context.py
+core/llm.py
+leleka.egg-info/PKG-INFO
+leleka.egg-info/SOURCES.txt
+leleka.egg-info/dependency_links.txt
+leleka.egg-info/entry_points.txt
+leleka.egg-info/requires.txt
+leleka.egg-info/top_level.txt
