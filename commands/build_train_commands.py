@@ -1,3 +1,15 @@
+"""
+ARCHITECTURAL PURPOSE:
+Provides compiler management infrastructure responsible for managing custom LLM profiles.
+It automates the aggregation of source context documents into flat manifest structures (`systemformed.txt`)
+and orchestrates external Ollama compilation subprocesses to instantiate or rebuild local models.
+
+ROADMAP & OPTIMIZATIONS:
+1. Transition `subprocess.run` invocations to asynchronous non-blocking process bindings to prevent UI lockups during model construction.
+2. Abstract console output logging targets into an external engine module to isolate UI execution rules from core operational code.
+3. Enforce structural validation checks on target `Modelfile` components before initiating compilation logic workflows.
+"""
+
 import typer
 import subprocess
 from pathlib import Path
@@ -23,7 +35,17 @@ def build_context(
     profile: str = typer.Argument(..., help="Profil ('user', 'pro', 'all') zum Scrapen")
 ):
     """
-    Sammelt die definierten Markdown/CSV-Dateien und baut die systemformed.txt
+    Architectural Purpose:
+    Aggregates multi-source directory markdown/CSV inputs into unified files across configurations specified by execution profiles.
+
+    Input Parameters:
+    - profile (str): Target recipe identification label controlling text ingestion mappings.
+
+    Return Values:
+    - None
+
+    Side Effects / Algorithmic Logic:
+    Creates missing directories dynamically and mutates persistent storage targets by writing generated context sheets directly to disk.
     """
     recipes = get_recipes(profile)
 
@@ -56,7 +78,17 @@ def train_model(
     profile: str = typer.Argument(..., help="Profil ('user', 'pro', 'all') zum Trainieren")
 ):
     """
-    Prüft die Bedingungen und trainiert das Ollama-Modell neu.
+    Architectural Purpose:
+    Validates filesystem prerequsites and runs external compilation subsystems to construct customized Ollama model images.
+
+    Input Parameters:
+    - profile (str): Active runtime structural profile filtering which recipes are executed.
+
+    Return Values:
+    - None
+
+    Side Effects / Algorithmic Logic:
+    Spawns OS subprocesses calling the `ollama` executable. Captures low-level shell data and outputs diagnostics to terminal channels.
     """
     recipes = get_recipes(profile)
 

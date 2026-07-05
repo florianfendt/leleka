@@ -1,3 +1,16 @@
+"""
+ARCHITECTURAL PURPOSE:
+Acts as the central configuration bootstrapping engine that dynamically resolves
+system-wide environment paths from a local JSON mapping file (`paths.json`). It
+automates spatial orientation by processing relative declarations and injecting
+resolved, absolute pathlib objects directly into the global execution context.
+
+ROADMAP & OPTIMIZATIONS:
+1. Deprecate direct global scope mutation (`target_globals[key.upper()] = ...`) in favor of a clean, immutable configuration registry class.
+2. Integrate robust schema validation (e.g., Pydantic) to verify `paths.json` structural integrity prior to runtime execution.
+3. Uncomment and formalize explicit fallback exports to eliminate downstream static analysis errors and implicit import failures.
+"""
+
 import json
 from pathlib import Path
 from typing import Dict, Any
@@ -7,7 +20,19 @@ CONFIGS_PATH = Path("~/workspace/00_system/config/paths.json").expanduser()
 
 
 def load_config() -> Dict[str, Any]:
-    """Loads the central JSON paths configuration."""
+    """
+    Architectural Purpose:
+    Reads and parses the master configuration JSON file containing relative system paths.
+
+    Input Parameters:
+    None.
+
+    Return Values:
+    - Dict[str, Any]: Dictionary representation of configuration states containing 'paths' and 'targets' keys.
+
+    Side Effects / Algorithmic Logic:
+    Performs file I/O operations. Catches all internal exceptions silently, returning a safe, empty structural fallback.
+    """
     if not CONFIGS_PATH.exists():
         return {"paths": {}, "targets": {}}
     try:
@@ -18,7 +43,20 @@ def load_config() -> Dict[str, Any]:
 
 
 def extract_and_inject_paths(data: Dict[str, Any], target_globals: Dict[str, Any]) -> None:
-    """Parses paths and targets from paths.json and injects them as UPPERCASE variables."""
+    """
+    Architectural Purpose:
+    Extracts configured path definitions, normalizes them against the workspace root anchor, and mutates the designated global scope.
+
+    Input Parameters:
+    - data (Dict[str, Any]): Raw input configuration dictionary parsed from paths.json.
+    - target_globals (Dict[str, Any]): The target namespace dictionary (typically globals()) where resolved paths will be bound.
+
+    Return Values:
+    - None
+
+    Side Effects / Algorithmic Logic:
+    Directly mutates the `target_globals` namespace dictionary by injecting dynamically evaluated UPPERCASE variable names representing absolute system paths.
+    """
     # Wir holen uns den Workspace-Root als Anker
     paths_block = data.get("paths", {})
     workspace_raw = paths_block.get("workspace", {}).get("path", ".")
