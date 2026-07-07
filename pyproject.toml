@@ -1,12 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "leleka"
 version = "0.1.0"
-description = "Add your description here"
+description = "The Stork is watching... Lightweight LLM CLI Tool"
 readme = "README.md"
 requires-python = ">=3.12"
+authors = [{ name = "Flo" }]
+
 dependencies = [
-    "code2prompt-rs>=3.2.1",
-    "langchain-core>=1.4.8",
-    "rich>=15.0.0",
-    "typer>=0.26.7",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+    "ollama>=0.3.0",
 ]
+
+[project.scripts]
+leleka = "leleka.main:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
