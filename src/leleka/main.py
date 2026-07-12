@@ -1,7 +1,6 @@
 import typer
 from rich.console import Console
-from .commands import ask
-from .commands import chat
+from leleka.commands import ask, chat,ps
 
 app = typer.Typer(
     name="Leleka",
@@ -15,6 +14,7 @@ console = Console()
 # Dadurch bleiben deine gewohnten CLI-Befehle exakt gleich!
 app.add_typer(ask.app, help="[cyan]AI Commands[/cyan]")
 app.add_typer(chat.app, help="[magenta]System-Commands[/magenta]")
+app.add_typer(ps.app, name="ps", help="[magenta]Infrastructure monitoring.[/magenta]")
 
 if __name__ == "__main__":
     app()
