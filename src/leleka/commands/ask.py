@@ -1,4 +1,4 @@
-from leleka.config import MODELS_PATH
+from leleka import config
 from leleka.tools import ps_helpers
 import os
 import typer
@@ -18,7 +18,7 @@ def ask_cmd(
 ):
     ps_helpers.show_logo()
 
-    model_file = MODELS_PATH / f"{model}.md"
+    model_file = config.MODELS_PATH / f"{model}.md"
     system_prompt = model_file.read_text(encoding="utf-8") if model_file.exists() else ""
     context = file.read_text(encoding="utf-8") + "\n" if file and file.exists() else ""
 
