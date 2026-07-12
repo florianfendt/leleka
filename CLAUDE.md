@@ -1,26 +1,23 @@
-# meta_data
-- **last_touch:** 2026-07-11
-- **project_id:** leleka
-- **project_type_:** dev
-- **status:** permanent
+# leleka — CLI AI assistant (Ollama-focused)
 
-# meta_data
-- project_id: leleka
-- project_type: dev
-- status: permanent
+## Structure (13 .py files, ~705 lines)
 
-## abstract
-Leleka is a lightweight, local-first agentic framework acting as a wrapper for local LLMs (Ollama-focused).
+| Module | Purpose |
+|--------|---------|
+| `main.py` | Typer entry point → wires `ask`, `chat`, `ps` sub-apps |
+| `config.py` | Path constants from env vars, DEFAULT_MODEL="mistral:7b", logo text |
+| `core/llm.py` | Streaming engine — `ollama.chat(stream=True)` + Rich Panel |
+| `core/projects_engine.py` | `ProjectFile`: markdown→sections dataclass (CRUD chapters) |
+| `commands/ask.py` | One-shot prompt → `ollama.generate()` with optional file context |
+| `commands/chat.py` | REPL chat loop, saves history to `{CHATS_PATH}/chat_{ts}_{model}.md` |
+| `commands/ps.py` | Infra monitoring: `--pulse`, `--models` (Ollama CLI) |
+| `tools/projects_helpers.py` | Scaffolding helpers using `ProjectFile` + token stats display |
+| `tools/ps_helpers.py` | Ollama model listing, pulse display, logo rendering (227 lines — largest file) |
+| `tools/workspace_ops.py` | CSV↔MD conversion, context scraping from files, dir sync |
 
-## manifesto
-1. Lightweight & Modular: Focus on zero-dependency design and simple skill-based expansion.
-2. Local-First: Full data sovereignty through local execution.
-3. Agentic Routing: Implementation of a "Rrouter" architecture for intelligent task distribution.
+## Key facts
+- **No abstraction over Ollama** — providers hard-coded in 3 places (`core/llm.py`, `commands/ask.py`, `tools/ps_helpers.py`)
+- `.markdown_utils` submodule referenced by `workspace_ops.py` is missing (broken import)
+- Three empty `__init__.py` files (namespace markers only)
 
-### core_components
-- Project (Class): Manages project specs, and task assignment.
-- Models (Class): Central unit for model management, training configurations, and resource/context profiling.
-- Skills: Modular functions for calendar, tasks, and RAG.
-- Core/Interaction: Chat and Ask interfaces for user-to-agent communication.
-
-## scratch
+## TODO → see TODO.md
