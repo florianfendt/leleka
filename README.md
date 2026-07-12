@@ -37,11 +37,14 @@ Ollama must be installed and running locally with at least one model pulled (e.g
 ## Usage
 
 ```bash
-# One-shot prompt (with optional file context)
-leleka ask "What do you think about this?" --file analysis.csv
+# Unified command — interactive chat (default)
+leleka run
 
-# Interactive chat session (history saved automatically)
-leleka chat
+# One-shot prompt from piped text
+cat file.txt | leleka run
+
+# With model selection
+leleka run --model mistral:7b
 
 # System monitoring
 leleka ps --models          # list local Ollama models
@@ -66,18 +69,18 @@ leleka/
 │   ├── llm.py           # Streaming engine (ollama.chat + Rich Panel)
 │   └── projects_engine.py  # Markdown section dataclass (ProjectFile)
 ├── commands/
-│   ├── ask.py           # One-shot prompt command
-│   ├── chat.py          # Interactive REPL chat command
-│   └── ps.py            # System monitoring command
+│   ├── run.py           # Unified prompt / chat command (new default)
+│   ├── ps.py            # System monitoring command
+│   └── ask.py           # Deprecated alias for `run`
 └── tools/
+    ├── session_ops.py       # Shared streaming/context helpers
     ├── projects_helpers.py  # Project scaffolding utilities
     ├── ps_helpers.py        # Ollama model listing, pulse display
-    └── workspace_ops.py     # CSV↔MD conversion, context scraping
 ```
 
 ## Roadmap
 
-- [ ] Unify `ask` + `chat` into a single command with mode flags
+- [x] Unify `ask` + `chat` into a single command with stdin piping support
 - [ ] Provider abstraction layer (swap Ollama for other backends)
 - [ ] Type hints, docstrings, and test coverage
 - [ ] Restore missing `.markdown_utils` submodule
