@@ -1,3 +1,12 @@
+"""Markdown project-file CRUD with template-driven chapter ordering.
+
+The ``ProjectFile`` dataclass parses a Markdown document into chapters keyed by
+their heading text (e.g. ``"## Abstract"``).  Chapters can be read, updated,
+deleted and re-written while respecting the order defined in an optional
+template file.
+"""
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -5,9 +14,19 @@ import re
 
 @dataclass
 class ProjectFile:
-    """Kapselt ein Markdown-File, das einer strikten Überschriften-Struktur folgt."""
+    """CRUD wrapper around a structured Markdown project file.
+
+    Chapters are keyed by their heading text (e.g. ``"## Abstract"``).
+    When *template_path* is provided, save order follows the template's
+    headings rather than insertion order.
+    """
+
     filepath: Path
-    template_path: Path
+    """Path to the Markdown document being managed."""
+
+    template_path: Path | None
+    """Optional template that defines chapter ordering (source of truth)."""
+
     # Interner Speicher für die geparsten Kapitel: { "## Überschrift": "Inhalt\n..." }
     _sections: Dict[str, str] = field(default_factory=dict, init=False)
 
@@ -21,7 +40,11 @@ class ProjectFile:
             self.parse()
 
     def get_template_headers(self) -> List[str]:
-        """Extrahiert alle Überschriften aus dem Template als Source of Truth."""
+        """Extract all headings from the template as source of truth.
+
+        Returns:
+            List of heading strings (e.g. ``["# Titel", "## Kapitel"]``).
+        """
         if not self.template_path or not self.template_path.is_file():
             return []
 
@@ -30,7 +53,11 @@ class ProjectFile:
         return [line.strip() for line in content.splitlines() if line.startswith("#")]
 
     def parse(self) -> None:
-        """Zerlegt die Datei in ihre Kapitel basierend auf den Überschriften."""
+        """Parse the file into chapters based on Markdown headings.
+
+        Populates ``_sections`` dict keyed by heading text.  Text before
+        the first heading is stored under ``"_HEADER_LESS_"``.
+        """
         if not self.filepath.is_file():
             return
 
@@ -55,20 +82,42 @@ class ProjectFile:
         self._sections[current_header] = "\n".join(current_content).strip()
 
     def get_chapter(self, header: str) -> str:
-        """Gibt den Inhalt eines spezifischen Kapitels zurück."""
+        """Return the content of a chapter by its heading.
+
+        Args:
+            header: Exact heading string (e.g. ``"## Abstract"``).
+
+        Returns:
+            Chapter content, or empty string if *header* is not found.
+        """
         return self._sections.get(header, "")
 
     def update_chapter(self, header: str, new_content: str) -> None:
-        """Updates oder erstellt den Inhalt eines Kapitels im Arbeitsspeicher."""
+        """Update or create a chapter's content in memory.
+
+        Args:
+            header: Exact heading string (e.g. ``"## Abstract"``).
+            new_content: New text body for the chapter.
+        """
         self._sections[header] = new_content.strip()
 
     def delete_chapter(self, header: str) -> None:
-        """Löscht ein Kapitel aus der Struktur."""
+        """Delete a chapter from the in-memory structure.
+
+        Args:
+            header: Exact heading string to remove.
+        """
         if header in self._sections:
             del self._sections[header]
 
     def save(self) -> None:
-        """Schreibt die gesamte Struktur geordnet zurück in die Datei."""
+        """Write the full chapter structure back to disk, ordered by template.
+
+        When a template is present, chapters are written in the order defined
+        by the template; missing template chapters get their heading created
+        as an empty section.  Chapters not in the template (but with content)
+        are appended after the last template entry.
+        """
         # Wenn ein Template existiert, nutzen wir dessen Reihenfolge als Orientierung
         allowed_headers = self.get_template_headers()
 

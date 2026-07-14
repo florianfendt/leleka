@@ -34,7 +34,14 @@ def execute_run(
     model: str = config.DEFAULT_MODEL,
     no_stdin: bool = False,
 ) -> None:
-    """Callback registered on the parent Typer app via ``app.command(callback=...)``."""
+    """Callback registered on the parent Typer app via ``app.command(callback=...)``.
+
+    Detects piped stdin for one-shot mode; otherwise enters interactive chat.
+
+    Args:
+        model: Ollama model identifier (e.g. ``"mistral:7b"``).
+        no_stdin: When *True*, skip stdin detection and always enter chat mode.
+    """
 
     ps_helpers.show_logo()
 
@@ -60,7 +67,16 @@ def _run_one_shot(
     system_prompt: str | None,
     input_text: str,
 ) -> None:
-    """Feed *input_text* to the LLM in one shot and stream the response."""
+    """Feed *input_text* to the LLM in one shot and stream the response.
+
+    Builds a messages list (system + user), streams via ``_stream_chat``,
+    then saves the exchange to chat history.
+
+    Args:
+        model: Ollama model identifier.
+        system_prompt: Optional system prompt loaded from template.
+        input_text: Raw text received on stdin.
+    """
 
     prompt = input_text.strip()
     if not prompt:
@@ -90,7 +106,16 @@ def _run_one_shot(
 # ------------------------------------------------------------------
 
 def _run_chat(model: str, system_prompt: str | None) -> None:
-    """Interactive REPL loop with automatic history saving."""
+    """Interactive REPL loop with automatic history saving.
+
+    Prompts the user for input in a ``while True`` loop; exits on ``exit``.
+    Each exchange is streamed via ``_stream_chat`` and appended to *messages*.
+    On exit, the full conversation (minus system messages) is saved to disk.
+
+    Args:
+        model: Ollama model identifier.
+        system_prompt: Optional system prompt loaded from template.
+    """
 
     console.print(config.LELEKA_LOGO)
     console.print(f"[dim]Starting chat with model: {model}[/dim]")
@@ -138,6 +163,13 @@ def _stream_chat(model: str, messages: list[dict[str, str]]) -> str:
     """Stream an Ollama chat response and return the full text.
 
     Renders a live Rich Panel while tokens arrive.  Returns ``""`` on error.
+
+    Args:
+        model: Ollama model identifier.
+        messages: Conversation history in Ollama chat format.
+
+    Returns:
+        Concatenated response text, or empty string on connection failure.
     """
     console.print(f"[bold cyan]Starte Generierung mit {model}...[/bold cyan]\n")
 

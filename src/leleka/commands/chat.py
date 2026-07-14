@@ -1,22 +1,31 @@
+"""Legacy ``chat`` subcommand — deprecated in favour of ``run``.
+
+Kept as a no-op stub that prints a deprecation warning.
+"""
+
 from __future__ import annotations
+
 import typer
 from pathlib import Path
 from datetime import datetime
 from leleka import config
 from leleka.tools import ps_helpers
-from leleka.core import llm  # Importiert deine core/llm.py
+from leleka.core import llm  # noqa: F401 — imported for deprecation stubs
 from rich.console import Console
-# Logo-Import aus den Templates einfügen, falls gewünscht
-# from .utils import get_leleka_logo
 
 app = typer.Typer()
 console = Console()
 
+
 @app.command("chat")
 def chat_cmd(
-    model: str = typer.Option(config.DEFAULT_MODEL, "--model", "-m")
-):
-    """Interaktiver Chat-Modus mit automatischer Historie."""
+    model: str = typer.Option(config.DEFAULT_MODEL, "--model", "-m"),
+) -> None:
+    """Deprecated *chat* command — prints a warning and exits.
+
+    Args:
+        model: Ollama model identifier (unused; kept for CLI compatibility).
+    """
     # 1. Logo anzeigen
     console.print(config.LELEKA_LOGO)
 
