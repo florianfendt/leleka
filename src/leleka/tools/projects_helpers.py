@@ -58,16 +58,28 @@ def log_sys_pulse(project_id: str, project_type: str, abstract: str) -> dict[str
 
 
 
-def calc_token_stats(leleka_res: dict) -> dict:
-    """Calculates token usage statistics from the Leleka response dictionary."""
+def calc_token_stats(leleka_res: dict[str, object]) -> dict[str, int]:
+    """Calculate token usage statistics from an Ollama response chunk.
+
+    Args:
+        leleka_res: Raw ``done`` chunk from the Ollama streaming API.
+
+    Returns:
+        Dict with keys *context*, *response*, and *context_size* (int).
+    """
     return {
-        "context": leleka_res.get("prompt_eval_count", 0),
-        "response": leleka_res.get("eval_count", 0),
-        "context_size": 8192  # Fester Wert als Fallback
+        "context": int(leleka_res.get("prompt_eval_count", 0)),
+        "response": int(leleka_res.get("eval_count", 0)),
+        "context_size": 8192,  # Fixed fallback value
     }
 
-def show_context_stats(stats: dict):
-    """Returns stats directly in the terminal"""
+
+def show_context_stats(stats: dict[str, int]) -> None:
+    """Display token-usage statistics to the console.
+
+    Args:
+        stats: Dict with *context*, *response*, and *context_size* keys.
+    """
     usage = (stats["context"] + stats["response"]) / stats["context_size"]
     console.print(f"[dim]Input: {stats['context']} | Response: {stats['response']} | Usage: {usage:.2%}[/dim]")
 

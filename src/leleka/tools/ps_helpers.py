@@ -168,8 +168,12 @@ def show_models() -> None:
     console.print(table)
 
 
-def show_system_pulse():
-    """Liest die System-Matrix aus und rendert sie."""
+def show_system_pulse() -> None:
+    """Read the system pulse JSON file and render it as a Rich table.
+
+    Reads the path from the ``$PULSE`` environment variable; prints an error
+    to the console when the variable or file is missing.
+    """
 
     # Hol dir den Pfad direkt aus der .bashrc
     # WICHTIG: Ersetze "DEIN_VARIABLEN_NAME" mit dem exakten Namen aus deiner .bashrc!
@@ -199,7 +203,11 @@ def show_system_pulse():
         console.print(f"[bold red]❌ Fehler beim Lesen des Pulses: {e}[/bold red]")
 
 def show_logo() -> str:
-    """Lädt das Logo dynamisch aus dem globalen Templates-Ordner."""
+    """Load the ASCII logo from the shared templates directory.
+
+    Returns:
+        The logo text, or a fallback string when the file is unavailable.
+    """
     try:
         # __file__ ist src/leleka/commands/chat.py
         # .parents[3] geht hoch zu: 1. commands -> 2. leleka -> 3. src -> 4. Root (Top Level)

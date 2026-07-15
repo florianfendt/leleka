@@ -1,6 +1,18 @@
+"""CLI entry point for the Leleka assistant.
+
+Subcommands::
+
+    leleka run   Unified prompt / chat command (replaces ``ask`` and ``chat``)
+    leleka ps    Infrastructure monitoring (--pulse, --models)
+
+The legacy ``ask`` and ``chat`` commands are deprecated but kept as no-op stubs.
+"""
+
+from __future__ import annotations
+
 import typer
 from rich.console import Console
-from leleka.commands import ask, chat, ps
+from leleka.commands import ask, chat, ps  # noqa: F401 — imported for deprecation stubs
 from leleka import config
 from leleka.commands.run import execute_run
 
@@ -17,21 +29,28 @@ console = Console()
 def run_cmd(
     model: str = typer.Option(config.DEFAULT_MODEL, "--model", "-m"),
     no_stdin: bool = typer.Option(False, "--no-stdin", help="Force interactive mode even when stdin is detected."),
-):
-    """Run Leleka — interactive chat or one-shot prompt from piped text."""
+) -> None:
+    """Run Leleka — interactive chat or one-shot prompt from piped text.
+
+    Args:
+        model: Ollama model identifier (default from config).
+        no_stdin: Skip stdin detection; always enter interactive mode.
+    """
     execute_run(model=model, no_stdin=no_stdin)
 
 
 @app.command("ask")
 def _deprecated_ask(
-    prompt: str = typer.Argument(..., help="Prompt"),
-):
+    prompt: str = typer.Argument(..., help="Prompt text"),
+) -> None:
+    """Deprecated *ask* command — prints a warning and exits."""
     console.print("[yellow][DEPRECATED][/yellow] 'ask' is deprecated. Use '[bold]leleka run[/bold]' instead.")
     raise typer.Exit()
 
 
 @app.command("chat")
-def _deprecated_chat():
+def _deprecated_chat() -> None:
+    """Deprecated *chat* command — prints a warning and exits."""
     console.print("[yellow][DEPRECATED][/yellow] 'chat' is deprecated. Use '[bold]leleka run[/bold]' instead.")
     raise typer.Exit()
 
