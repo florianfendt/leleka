@@ -177,7 +177,7 @@ def show_system_pulse() -> None:
 
     # Hol dir den Pfad direkt aus der .bashrc
     # WICHTIG: Ersetze "DEIN_VARIABLEN_NAME" mit dem exakten Namen aus deiner .bashrc!
-    raw_path = os.getenv("$PULSE")
+    raw_path = os.getenv("PULSE")
 
     if not raw_path:
         console.print("[bold red]❌ Umgebungsvariable für den Puls ist im System nicht gesetzt![/bold red]")
