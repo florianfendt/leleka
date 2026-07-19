@@ -59,3 +59,35 @@ def test_show_system_pulse_reads_pulse_environment(monkeypatch, tmp_path) -> Non
     ps_helpers.show_system_pulse()
 
     assert "erfolgreich geladen" in output.getvalue()
+
+
+class TestShowModels:
+    """Test show_models fallback when --json returns wrong-shaped data."""
+
+    def test_wrong_json_shape_falls_through_to_text(self, monkeypatch) -> None:
+        """When --json returns valid-but-wrong JSON, text fallback should still work."""
+        call_count = 0
+
+        def fake_run(args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            if args == ["ollama", "list", "--json"]:
+                # First call: --json returns a dict without "models" key
+                return type("Result", (), {"stdout": '{"status": "ok"}'})()
+            else:
+                # Second call: text output with real model data
+                stdout = (
+                    "NAME                        SIZE      MODIFIED     \n"
+                    "mistral:7b                  4.1 GB    2 weeks ago  \n"
+                )
+                return type("Result", (), {"stdout": stdout})()
+
+        monkeypatch.setattr(ps_helpers.subprocess, "run", fake_run)
+        output = StringIO()
+        monkeypatch.setattr(ps_helpers, "console", Console(file=output, color_system=None))
+
+        ps_helpers.show_models()
+
+        assert call_count == 2
+        captured = output.getvalue()
+        assert "mistral:7b" in captured

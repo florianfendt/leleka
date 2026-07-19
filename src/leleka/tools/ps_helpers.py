@@ -59,6 +59,21 @@ def _model_time(modified_raw: str) -> str:
     except ValueError:
         return modified_raw.split("T")[0] # Fallback: Nur das Datum anzeigen
 
+def _looks_like_models(data: object) -> bool:
+    """Return True if *data* looks like a list of Ollama model dicts."""
+    if not isinstance(data, list):
+        return False
+    if not data:
+        return False
+    # Each item should be a dict with at least one known key.
+    for item in data:
+        if not isinstance(item, dict):
+            return False
+        if any(k in item for k in ("name", "NAME", "id", "ID", "model_id", "digest")):
+            return True
+    return False
+
+
 # ==========================================
 # DEINE URSPRÜNGLICHE FUNKTION (mit leicht optimiertem Fallback)
 # ==========================================
@@ -101,18 +116,22 @@ def show_models() -> None:
             return
 
         # Attempt JSON parse first
+        json_parsed = False
         try:
-            models = json.loads(result.stdout)
-            # Manche Ollama-Versionen packen die Modelle in einen Key "models"
-            if isinstance(models, dict) and "models" in models:
-                models = models["models"]
-                break
-            elif isinstance(models, list):
-                break  # success
+            data = json.loads(result.stdout)
+            json_parsed = True  # valid JSON — skip text fallback for this iteration
+            if isinstance(data, dict) and "models" in data:
+                models = data["models"]
+            elif isinstance(data, list):
+                models = data
         except (json.JSONDecodeError, TypeError):
             pass
 
-        # Fallback: text-based parsing
+        # Validate JSON produced model-like data.
+        if json_parsed and not _looks_like_models(models or []):
+            continue  # valid JSON but wrong shape — try next command variant
+
+        # Fallback: text-based parsing (only when JSON didn't produce valid data)
         lines = result.stdout.strip().split('\n')
         if len(lines) < 2:
             console.print(
