@@ -1,5 +1,10 @@
 """Tests for ``tools.ps_helpers`` pure helpers."""
 
+from io import StringIO
+
+from rich.console import Console
+
+from leleka.tools import ps_helpers
 from leleka.tools.ps_helpers import _format_size, _model_time
 
 
@@ -42,3 +47,15 @@ class TestModelTime:
     def test_handles_empty_string(self) -> None:
         # Empty string is falsy → returns "?" per the function's guard clause
         assert _model_time("") == "?"
+
+
+def test_show_system_pulse_reads_pulse_environment(monkeypatch, tmp_path) -> None:
+    pulse_file = tmp_path / "pulse.json"
+    pulse_file.write_text("{}", encoding="utf-8")
+    monkeypatch.setenv("PULSE", str(pulse_file))
+    output = StringIO()
+    monkeypatch.setattr(ps_helpers, "console", Console(file=output, color_system=None))
+
+    ps_helpers.show_system_pulse()
+
+    assert "erfolgreich geladen" in output.getvalue()
