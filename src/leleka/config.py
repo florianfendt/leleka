@@ -108,7 +108,7 @@ class _Config:
 
 config = _Config()
 
-DEFAULT_MODEL = "mistral:7b"
+DEFAULT_MODEL = "gemma4:12b"
 
 LOGO_PATH = Path(__file__).resolve().parent / "templates" / "leleka_logo.md"
 LELEKA_LOGO = LOGO_PATH.read_text(encoding="utf-8")
