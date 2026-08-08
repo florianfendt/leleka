@@ -8,7 +8,7 @@ from __future__ import annotations
 import typer
 from pathlib import Path
 from datetime import datetime
-from leleka import config
+from leleka.config import _cfg, LELEKA_LOGO
 from leleka.tools import ps_helpers
 from leleka.core import llm  # noqa: F401 — imported for deprecation stubs
 from rich.console import Console
@@ -19,7 +19,7 @@ console = Console()
 
 @app.command("chat")
 def chat_cmd(
-    model: str = typer.Option(config.DEFAULT_MODEL, "--model", "-m"),
+    model: str = typer.Option(_cfg.DEFAULT_MODEL, "--model", "-m"),
 ) -> None:
     """Deprecated *chat* command — prints a warning and exits.
 
@@ -27,12 +27,12 @@ def chat_cmd(
         model: Ollama model identifier (unused; kept for CLI compatibility).
     """
     # 1. Logo anzeigen
-    console.print(config.LELEKA_LOGO)
+    console.print(LELEKA_LOGO)
 
     console.print(f"Starting chat with model: {model}")
 
     # System Prompt laden falls vorhanden
-    model_file = config.MODELS_PATH / f"{model}.md"
+    model_file = _cfg.MODELS_PATH / f"{model}.md"
     system_prompt = model_file.read_text(encoding="utf-8") if model_file.exists() else ""
 
     # 2. Verlauf initialisieren (Hierdurch verschwindet der Pylance-Fehler!)
@@ -65,9 +65,9 @@ def chat_cmd(
 
     # 4. Speichern nach dem Beenden
     if len(messages) > (1 if system_prompt else 0):
-        config.CHATS_PATH.mkdir(parents=True, exist_ok=True)
+        _cfg.CHATS_PATH.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        save_path = config.CHATS_PATH / f"chat_{timestamp}_{model}.md"
+        save_path = _cfg.CHATS_PATH / f"chat_{timestamp}_{model}.md"
 
         chat_log = []
         for m in messages:

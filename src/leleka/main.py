@@ -13,7 +13,7 @@ from __future__ import annotations
 import typer
 from rich.console import Console
 from leleka.commands import ask, chat, ps  # noqa: F401 — imported for deprecation stubs
-from leleka import config
+from leleka.config import _cfg
 from leleka.commands.run import execute_run
 
 app = typer.Typer(
@@ -25,18 +25,19 @@ app = typer.Typer(
 console = Console()
 
 
-@app.command("run", help="[cyan]Unified prompt / chat command[/cyan]")
-def run_cmd(
-    model: str = typer.Option(config.DEFAULT_MODEL, "--model", "-m"),
-    no_stdin: bool = typer.Option(False, "--no-stdin", help="Force interactive mode even when stdin is detected."),
-) -> None:
-    """Run Leleka — interactive chat or one-shot prompt from piped text.
-
-    Args:
-        model: Ollama model identifier (default from config).
-        no_stdin: Skip stdin detection; always enter interactive mode.
-    """
-    execute_run(model=model, no_stdin=no_stdin)
+@app.command("run")
+def run(
+    prompt: list[str] = typer.Argument(
+        None, help="Optional prompt / context text."
+    ),
+    model: str = typer.Option(_cfg.DEFAULT_MODEL, "--model", "-m"),
+    no_stdin: bool = typer.Option(
+        False,
+        "--no-stdin",
+        help="Force interactive mode even when stdin is detected.",
+    ),
+):
+    execute_run(prompt=prompt, model=model, no_stdin=no_stdin)
 
 
 @app.command("ask")

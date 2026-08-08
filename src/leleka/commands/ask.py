@@ -13,7 +13,7 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.console import Console
 
-from leleka import config
+from leleka.config import _cfg, LELEKA_LOGO  # noqa: F401 — kept for deprecation stubs
 from leleka.tools import ps_helpers
 
 

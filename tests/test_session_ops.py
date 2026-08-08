@@ -39,15 +39,15 @@ class TestLoadSystemPrompt:
         model_file = tmp_path / "test-model.md"
         model_file.write_text("You are helpful.", encoding="utf-8")
 
-        with patch("leleka.tools.session_ops.config") as mock_config:
-            mock_config.MODELS_PATH = tmp_path
+        with patch("leleka.tools.session_ops._cfg") as mock_cfg:
+            mock_cfg.MODELS_PATH = tmp_path
             result = load_system_prompt("test-model")
 
         assert result == "You are helpful."
 
     def test_returns_none_when_file_missing(self, tmp_path: Path) -> None:
-        with patch("leleka.tools.session_ops.config") as mock_config:
-            mock_config.MODELS_PATH = tmp_path
+        with patch("leleka.tools.session_ops._cfg") as mock_cfg:
+            mock_cfg.MODELS_PATH = tmp_path
             result = load_system_prompt("nonexistent-model")
 
         assert result is None
@@ -62,8 +62,8 @@ class TestSaveChat:
             {"role": "assistant", "content": "hello"},
         ]
 
-        with patch("leleka.tools.session_ops.config") as mock_config:
-            mock_config.CHATS_PATH = tmp_path
+        with patch("leleka.tools.session_ops._cfg") as mock_cfg:
+            mock_cfg.CHATS_PATH = tmp_path
             result_path = save_chat(messages, "test-model")
 
         assert result_path.exists()
@@ -74,8 +74,8 @@ class TestSaveChat:
         assert "hello" in content
 
     def test_handles_special_chars_in_model_name(self, tmp_path: Path) -> None:
-        with patch("leleka.tools.session_ops.config") as mock_config:
-            mock_config.CHATS_PATH = tmp_path
+        with patch("leleka.tools.session_ops._cfg") as mock_cfg:
+            mock_cfg.CHATS_PATH = tmp_path
             result_path = save_chat([{"role": "user", "content": "x"}], "ollama/mistral:7b")
 
         # Filename (not full path) should have no slashes or colons

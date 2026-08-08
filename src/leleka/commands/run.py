@@ -23,7 +23,7 @@ from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 
-from leleka import config
+from leleka.config import _cfg, LELEKA_LOGO
 from leleka.tools import ps_helpers, session_ops
 
 
@@ -31,7 +31,8 @@ console = Console()
 
 
 def execute_run(
-    model: str = config.DEFAULT_MODEL,
+    prompt: list[str] | None = None,
+    model: str = _cfg.DEFAULT_MODEL,
     no_stdin: bool = False,
 ) -> None:
     """Callback registered on the parent Typer app via ``app.command(callback=...)``.
@@ -45,15 +46,26 @@ def execute_run(
 
     ps_helpers.show_logo()
 
-    # ------------------------------------------------------------------
-    # 1. Detect whether we have piped input (one-shot) or not (interactive)
-    # ------------------------------------------------------------------
+    # 1. Piped Stdin auslesen (falls vorhanden)
     piped_text = None if no_stdin else session_ops.read_stdin_if_available()
+
+    # 2. Argumente zu einem String zusammenfügen
+    cli_prompt = " ".join(prompt).strip() if prompt else None
+
+    # 3. Stdin und Argumente kombinieren
+    input_parts = []
+    if piped_text:
+        input_parts.append(piped_text.strip())
+    if cli_prompt:
+        input_parts.append(cli_prompt)
+
+    combined_input = "\n\n".join(input_parts) if input_parts else None
 
     system_prompt = session_ops.load_system_prompt(model)
 
-    if piped_text is not None:
-        _run_one_shot(model=model, system_prompt=system_prompt, input_text=piped_text)
+    # 4. Verzweigung
+    if combined_input:
+        _run_one_shot(model=model, system_prompt=system_prompt, input_text=combined_input)
     else:
         _run_chat(model=model, system_prompt=system_prompt)
 
@@ -92,9 +104,9 @@ def _run_one_shot(
     full_response = _stream_chat(model=model, messages=messages)
 
     # Save one-shot session to chat history
-    config.CHATS_PATH.mkdir(parents=True, exist_ok=True)
+    _cfg.CHATS_PATH.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    save_path = config.CHATS_PATH / f"run_{timestamp}_{model}.md"
+    save_path = _cfg.CHATS_PATH / f"run_{timestamp}_{model}.md"
     save_path.write_text(
         f"**USER**: {prompt}\n\n**ASSISTANT**: {full_response}",
         encoding="utf-8",
@@ -117,7 +129,7 @@ def _run_chat(model: str, system_prompt: str | None) -> None:
         system_prompt: Optional system prompt loaded from template.
     """
 
-    console.print(config.LELEKA_LOGO)
+    console.print(LELEKA_LOGO)
     console.print(f"[dim]Starting chat with model: {model}[/dim]")
 
     messages: list[dict[str, str]] = []
@@ -142,9 +154,9 @@ def _run_chat(model: str, system_prompt: str | None) -> None:
             messages.pop()
 
     # Save chat history on exit
-    config.CHATS_PATH.mkdir(parents=True, exist_ok=True)
+    _cfg.CHATS_PATH.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    save_path = config.CHATS_PATH / f"chat_{timestamp}_{model}.md"
+    save_path = _cfg.CHATS_PATH / f"chat_{timestamp}_{model}.md"
 
     chat_log: list[str] = []
     for m in messages:

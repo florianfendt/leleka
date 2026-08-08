@@ -16,7 +16,7 @@ import ollama
 from rich.live import Live
 from rich.panel import Panel
 
-from leleka import config
+from leleka.config import _cfg, LELEKA_LOGO  # noqa: F401 — kept for deprecation stubs
 from leleka.tools._ui import console
 
 
@@ -33,7 +33,7 @@ def load_system_prompt(model: str) -> str | None:
 
     Returns ``None`` when no matching model file exists.
     """
-    model_file = config.MODELS_PATH / f"{model}.md"
+    model_file = _cfg.MODELS_PATH / f"{model}.md"
     if model_file.exists():
         return model_file.read_text(encoding="utf-8")
     return None
@@ -125,7 +125,7 @@ def save_chat(messages: list[dict[str, str]], model: str) -> Path:
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_model = model.replace("/", "_").replace(":", "_")
     filename = f"chat_{ts}_{safe_model}.md"
-    chat_dir = config.CHATS_PATH
+    chat_dir = _cfg.CHATS_PATH
     chat_dir.mkdir(parents=True, exist_ok=True)
     filepath = chat_dir / filename
 
