@@ -47,6 +47,8 @@ class _Config:
     CHATS_PATH are computed after resolution.
     """
 
+    DEFAULT_MODEL = "gemma4:12b"
+
     def __init__(self) -> None:
         self._engine: PathEngine | None = None
         self._resolved: bool = False
@@ -76,19 +78,19 @@ class _Config:
             engine = PathEngine(data)
             resolved = engine.resolve_hierarchy()  # type: ignore[return-value]
 
-            # Map paths.json keys to leleka constants (uppercase convention)
-            mapping: Dict[str, str] = {}
+            # Normalize keys to lowercase for robust matching
+            normalized_resolved = {k.lower(): v for k, v in resolved.items()}
+
+            mapping: Dict[str, Path] = {}
             for key in ("context", "models"):
-                upper_key = key.upper()
-                if upper_key in resolved:
-                    mapping[upper_key] = resolved[upper_key]
+                if key in normalized_resolved:
+                    mapping[key.upper()] = Path(normalized_resolved[key])
 
             self._engine = engine
-            # Store on instance so callers can access it later if needed
-            self._resolved_paths = mapping  # type: ignore[attr-defined]
+            self._resolved_paths = mapping
             self._resolved = True
 
-        return self._resolved_paths  # type: ignore[attr-defined]
+        return self._resolved_paths
 
     def reload(self) -> None:
         """Invalidate all cached paths — useful for testing / hot-reload."""
@@ -103,12 +105,15 @@ class _Config:
 
 
 # ---------------------------------------------------------------------------
-# Module-level singleton — callers use ``config.CONTEXT_PATH`` etc.
+# Module-level singleton — callers use ``_cfg.CONTEXT_PATH`` etc.
 # ---------------------------------------------------------------------------
 
-config = _Config()
+_cfg = _Config()
 
 DEFAULT_MODEL = "gemma4:12b"
 
 LOGO_PATH = Path(__file__).resolve().parent / "templates" / "leleka_logo.md"
-LELEKA_LOGO = LOGO_PATH.read_text(encoding="utf-8")
+try:
+    LELEKA_LOGO = LOGO_PATH.read_text(encoding="utf-8")
+except (FileNotFoundError, IOError):
+    LELEKA_LOGO = "[bold magenta]>> Leleka CLI <<[/bold magenta]"
