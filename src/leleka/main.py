@@ -1,28 +1,18 @@
-"""CLI entry point for the Leleka assistant.
-
-Subcommands::
-
-    leleka run   Unified prompt / chat command (replaces ``ask`` and ``chat``)
-    leleka ps    Infrastructure monitoring (--pulse, --models)
-
-The legacy ``ask`` and ``chat`` commands are deprecated but kept as no-op stubs.
-"""
+# leleka/main.py
 
 from __future__ import annotations
 
 import typer
-from rich.console import Console
-from leleka.commands import ask, chat, ps  # noqa: F401 — imported for deprecation stubs
+from leleka.commands import ps
 from leleka.config import _cfg
 from leleka.commands.run import execute_run
 
 app = typer.Typer(
     name="Leleka",
-    help="[bold cyan] LELEKA CLI AI [bold cyan]",
+    help="[bold cyan] LELEKA CLI AGENT [bold cyan]",
     no_args_is_help=True,
     rich_markup_mode="rich"
 )
-console = Console()
 
 
 @app.command("run")
@@ -39,21 +29,6 @@ def run(
 ):
     execute_run(prompt=prompt, model=model, no_stdin=no_stdin)
 
-
-@app.command("ask")
-def _deprecated_ask(
-    prompt: str = typer.Argument(..., help="Prompt text"),
-) -> None:
-    """Deprecated *ask* command — prints a warning and exits."""
-    console.print("[yellow][DEPRECATED][/yellow] 'ask' is deprecated. Use '[bold]leleka run[/bold]' instead.")
-    raise typer.Exit()
-
-
-@app.command("chat")
-def _deprecated_chat() -> None:
-    """Deprecated *chat* command — prints a warning and exits."""
-    console.print("[yellow][DEPRECATED][/yellow] 'chat' is deprecated. Use '[bold]leleka run[/bold]' instead.")
-    raise typer.Exit()
 
 app.add_typer(ps.app, name="ps", help="[magenta]Infrastructure monitoring.[/magenta]")
 
