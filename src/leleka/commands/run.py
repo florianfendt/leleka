@@ -13,21 +13,15 @@ No distinction between "context" and "prompt" — it's all just text going in.
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from datetime import datetime
 
 import typer
-import ollama
-from rich.console import Console
-from rich.live import Live
-from rich.panel import Panel
 
 from leleka.config import _cfg, LELEKA_LOGO
 from leleka.tools import ps_helpers, session_ops
 
 
-console = Console()
+console = ps_helpers.console
 
 
 def execute_run(
@@ -81,7 +75,7 @@ def _run_one_shot(
 ) -> None:
     """Feed *input_text* to the LLM in one shot and stream the response.
 
-    Builds a messages list (system + user), streams via ``_stream_chat``,
+    Builds a messages list (system + user), streams via ``session_ops.stream_chat``,
     then saves the exchange to chat history.
 
     Args:
@@ -101,7 +95,7 @@ def _run_one_shot(
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
 
-    full_response = _stream_chat(model=model, messages=messages)
+    full_response = session_ops.stream_chat(model=model, messages=messages)
 
     # Save one-shot session to chat history
     _cfg.CHATS_PATH.mkdir(parents=True, exist_ok=True)
@@ -121,7 +115,7 @@ def _run_chat(model: str, system_prompt: str | None) -> None:
     """Interactive REPL loop with automatic history saving.
 
     Prompts the user for input in a ``while True`` loop; exits on ``exit``.
-    Each exchange is streamed via ``_stream_chat`` and appended to *messages*.
+    Each exchange is streamed via ``session_ops.stream_chat`` and appended to *messages*.
     On exit, the full conversation (minus system messages) is saved to disk.
 
     Args:
@@ -145,7 +139,7 @@ def _run_chat(model: str, system_prompt: str | None) -> None:
 
         messages.append({"role": "user", "content": user_input})
 
-        assistant_response = _stream_chat(model=model, messages=messages)
+        assistant_response = session_ops.stream_chat(model=model, messages=messages)
 
         if assistant_response:
             messages.append({"role": "assistant", "content": assistant_response})
@@ -166,52 +160,3 @@ def _run_chat(model: str, system_prompt: str | None) -> None:
     save_path.write_text("\n\n".join(chat_log), encoding="utf-8")
     ps_helpers.console.print(f"[dim]Chat saved to: {save_path}[/dim]")
 
-
-# ------------------------------------------------------------------
-# Shared streaming helper (used by both modes)
-# ------------------------------------------------------------------
-
-def _stream_chat(model: str, messages: list[dict[str, str]]) -> str:
-    """Stream an Ollama chat response and return the full text.
-
-    Renders a live Rich Panel while tokens arrive.  Returns ``""`` on error.
-
-    Args:
-        model: Ollama model identifier.
-        messages: Conversation history in Ollama chat format.
-
-    Returns:
-        Concatenated response text, or empty string on connection failure.
-    """
-    console.print(f"[bold cyan]Starte Generierung mit {model}...[/bold cyan]\n")
-
-    try:
-        response_stream = ollama.chat(
-            model=model,
-            messages=messages,
-            stream=True,
-        )
-    except Exception as e:
-        ps_helpers.console.print(f"[bold red]❌ Error connecting to Ollama: {e}[/bold red]")
-        return ""
-
-    full_response = ""
-    token_stats = {"context": 0, "response": 0, "context_size": 8192}
-
-    with Live(
-        Panel("", title=f"Leka ({model})", border_style="cyan"),
-        console=ps_helpers.console,
-    ) as live:
-        for chunk in response_stream:
-            message_chunk = chunk.get("message", {})
-            content = message_chunk.get("content", "")
-            full_response += content
-
-            live.update(Panel(full_response, title=f"Leka ({model})", border_style="cyan"))
-
-            if chunk.get("done"):
-                token_stats["context"] = chunk.get("prompt_eval_count", 0)
-                token_stats["response"] = chunk.get("eval_count", 0)
-
-    session_ops.show_token_stats_from_chunk(token_stats)
-    return full_response
