@@ -1,7 +1,6 @@
 """Shared session helpers for the unified ``run`` command.
 
-Extracts common logic from ``commands/ask.py`` and ``commands/chat.py``:
-system-prompt loading, streaming panel rendering, token-stats display,
+Handles system-prompt loading, streaming panel rendering, token-stats display,
 and chat persistence.
 """
 
@@ -16,7 +15,7 @@ import ollama
 from rich.live import Live
 from rich.panel import Panel
 
-from leleka.config import _cfg, LELEKA_LOGO  # noqa: F401 — kept for deprecation stubs
+from leleka.config import _cfg
 from leleka.tools._ui import console
 
 

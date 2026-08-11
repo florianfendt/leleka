@@ -228,8 +228,8 @@ def show_logo() -> str:
         The logo text, or a fallback string when the file is unavailable.
     """
     try:
-        # __file__ ist src/leleka/commands/chat.py
-        # .parents[3] geht hoch zu: 1. commands -> 2. leleka -> 3. src -> 4. Root (Top Level)
+        # __file__ ist src/leleka/tools/ps_helpers.py
+        # .parents[3] geht hoch zu: 1. tools -> 2. leleka -> 3. src -> 4. Root (Top Level)
         project_root = Path(__file__).resolve().parents[3]
         logo_path = LELEKA_LOGO
 
